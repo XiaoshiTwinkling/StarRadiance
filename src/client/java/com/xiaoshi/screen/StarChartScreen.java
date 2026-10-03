@@ -4,6 +4,7 @@ import com.xiaoshi.astro.AstroTime;
 import com.xiaoshi.astro.Precession;
 import com.xiaoshi.astro.SkyChartProjection;
 import com.xiaoshi.hud.OrbitDiagram;
+import com.xiaoshi.hud.PanelBlur;
 import com.xiaoshi.hud.EntryZoom;
 import com.xiaoshi.sky.Celestial;
 import com.xiaoshi.sky.ConstellationCatalog;
@@ -57,6 +58,8 @@ public class StarChartScreen extends Screen {
 	private static final int MARKED = 0xFFFFD24A;
 	private static final int MARKED_DIM = 0x60FFD24A;
 	private static final int PANEL_BACKGROUND = 0xB0000000;
+	/** Darkening laid over the blurred copy so the panel text keeps its contrast. */
+	private static final int PANEL_TINT = 0x78000000;
 	private static final int PANEL_BORDER = 0x60FFFFFF;
 	private static final int TEXT = 0xFFFFFFFF;
 	private static final int TEXT_DIM = 0xFF9AA4B4;
@@ -733,7 +736,12 @@ public class StarChartScreen extends Screen {
 		int x = this.width - panelWidth - 8;
 		int y = 38;
 		int height = 12 + (rows.size() + 1) * 11;
-		context.fill(x, y, x + panelWidth, y + height, PANEL_BACKGROUND);
+		// Frosted glass: blur whatever is behind the panel, then tint it so white text stays legible.
+		if (PanelBlur.draw(context, x, y, panelWidth, height)) {
+			context.fill(x, y, x + panelWidth, y + height, PANEL_TINT);
+		} else {
+			context.fill(x, y, x + panelWidth, y + height, PANEL_BACKGROUND);
+		}
 		context.fill(x, y, x + panelWidth, y + 1, PANEL_BORDER);
 		context.fill(x, y + height - 1, x + panelWidth, y + height, PANEL_BORDER);
 

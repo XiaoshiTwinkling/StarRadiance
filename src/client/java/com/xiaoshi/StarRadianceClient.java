@@ -27,6 +27,7 @@ public class StarRadianceClient implements ClientModInitializer {
 	private static final Identifier MOON_SHADER = Identifier.of("starradiance", "moon");
 	private static final Identifier SUN_SHADER = Identifier.of("starradiance", "sun");
 	private static final Identifier SKY_SHADER = Identifier.of("starradiance", "sky");
+	private static final Identifier PANEL_BLUR_SHADER = Identifier.of("starradiance", "panel_blur");
 
 	private static final KeyBinding SKY_DEBUG_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 		"key.starradiance.skydebug", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_K, "key.categories.starradiance"));
@@ -58,6 +59,11 @@ public class StarRadianceClient implements ClientModInitializer {
 				SkyDomeRenderer.setProgram(program);
 				StarFieldRenderer.setProgram(program);
 				StarRadiance.LOGGER.info("Loaded core shader {}", SKY_SHADER);
+			});
+			// Used by the star chart to frost the background behind its info panel.
+			context.register(PANEL_BLUR_SHADER, VertexFormats.POSITION_TEXTURE_COLOR, program -> {
+				com.xiaoshi.hud.PanelBlur.setProgram(program);
+				StarRadiance.LOGGER.info("Loaded core shader {}", PANEL_BLUR_SHADER);
 			});
 		});
 
