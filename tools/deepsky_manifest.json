@@ -1,0 +1,14 @@
+{
+  "objects": 58,
+  "types": [
+    "galaxy",
+    "open cluster",
+    "globular cluster",
+    "nebula",
+    "planetary nebula",
+    "supernova remnant"
+  ],
+  "bytes": 3065,
+  "epoch": "J2000",
+  "source": "Messier / NGC catalogue positions (public domain astronomical data)"
+}

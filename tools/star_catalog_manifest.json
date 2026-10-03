@@ -1,0 +1,13 @@
+{
+  "source": "hyg_v42.csv",
+  "sourceSha256": "b2983a8d934e4f031cdb67bdd6c3437f8c5143cd6606a9573a9a9ac4b6375fd2",
+  "catalogEpoch": "J2000",
+  "maxMagnitude": null,
+  "stars": 117734,
+  "constellations": 88,
+  "strings": 7993,
+  "skippedSun": 1,
+  "skippedNoColour": 1891,
+  "catalogBytes": 1883752,
+  "metaBytes": 2439665
+}

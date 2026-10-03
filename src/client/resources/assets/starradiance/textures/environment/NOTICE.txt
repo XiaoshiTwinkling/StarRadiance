@@ -1,0 +1,21 @@
+Lunar surface imagery and elevation data
+========================================
+
+The moon albedo textures in this directory (moon_albedo_*.png) are derived from the
+NASA Scientific Visualization Studio "CGI Moon Kit" by Ernie Wright, built from
+Lunar Reconnaissance Orbiter Camera (LROC) imagery:
+
+    https://svs.gsfc.nasa.gov/4720/
+
+The moon normal maps (moon_normal_*.png) are derived from the Lunar Orbiter Laser
+Altimeter (LOLA) digital elevation model distributed by the LRO mission:
+
+    https://svs.gsfc.nasa.gov/4720/
+    https://pds-geosciences.wustl.edu/missions/lro/lola.htm
+
+Source: NASA / Goddard Space Flight Center / Scientific Visualization Studio.
+
+NASA content is generally not subject to copyright in the United States and may be
+redistributed; NASA is acknowledged above as the source. The NASA name, insignia,
+and logotype are protected marks and are NOT used by this project, and nothing here
+implies NASA endorsement.

@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "com.xiaoshi.mixin.client",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"ExampleClientMixin",
+		"WorldRendererMixin",
+		"ClientWorldMixin",
+		"LightmapMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
