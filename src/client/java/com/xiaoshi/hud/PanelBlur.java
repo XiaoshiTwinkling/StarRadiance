@@ -86,16 +86,16 @@ public final class PanelBlur {
 		RenderSystem.disableBlend();
 		float u0 = (float) x / guiWidth;
 		float u1 = (float) (x + width) / guiWidth;
-		float v0 = (float) y / guiHeight;
-		float v1 = (float) (y + height) / guiHeight;
-		// The framebuffer's texture is upside down relative to GUI coordinates, so the top edge of the
-		// panel samples the larger v.
+		// Framebuffer textures put texture row 0 at the bottom of the window, so GUI y maps to
+		// 1 - y/height. (Using y/height directly sampled a completely different strip of the screen.)
+		float vTop = 1.0F - (float) y / guiHeight;
+		float vBottom = 1.0F - (float) (y + height) / guiHeight;
 		BufferBuilder builder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS,
 			VertexFormats.POSITION_TEXTURE);
-		builder.vertex(x, y + height, 0.0F).texture(u0, v0);
-		builder.vertex(x + width, y + height, 0.0F).texture(u1, v0);
-		builder.vertex(x + width, y, 0.0F).texture(u1, v1);
-		builder.vertex(x, y, 0.0F).texture(u0, v1);
+		builder.vertex(x, y + height, 0.0F).texture(u0, vBottom);
+		builder.vertex(x + width, y + height, 0.0F).texture(u1, vBottom);
+		builder.vertex(x + width, y, 0.0F).texture(u1, vTop);
+		builder.vertex(x, y, 0.0F).texture(u0, vTop);
 		BufferRenderer.drawWithGlobalProgram(builder.end());
 		RenderSystem.enableBlend();
 		RenderSystem.enableDepthTest();
