@@ -16,9 +16,9 @@ import org.lwjgl.glfw.GLFW;
  * The full-screen star map: a non-pausing screen (the world keeps running behind it, like chat) so
  * the mouse is free to explore the solar system and to turn the globes.
  *
- * <p>The orbit chart can be dragged and zoomed with the wheel; clicking a planet zooms into a
- * procedural globe of it. In the globe view dragging orbits the camera around the body (so the
- * Earth visibly turns), the wheel magnifies it, and a click or Esc goes back to the chart.
+ * <p>The left button only ever drags: it pans the orbit chart, and in the globe view it turns the
+ * body. Right-clicking a planet zooms into a procedural globe of it, right-clicking again (or Esc)
+ * goes back to the chart; the wheel zooms in both views.
  *
  * <p>K or Esc closes it (Esc first leaves the globe view), Shift switches between the opaque chart
  * and the see-through mode that also shows the translated data block.
@@ -208,23 +208,22 @@ public class StarMapScreen extends Screen {
 	public boolean mouseReleased(double mouseX, double mouseY, int button) {
 		boolean wasClick = !pressDragged;
 		pressDragged = false;
-		if (!wasClick) {
+		if (!wasClick || button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+			// The left button only ever drags (pan the chart, turn the globe).
 			return true;
 		}
 		if (zoomedBody >= 0) {
-			// A plain click leaves the globe view and eases back to the chart.
+			// A plain right click leaves the globe view and eases back to the chart.
 			zoomedBody = -1;
 			return true;
 		}
-		if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-			int body = bodyAt(mouseX, mouseY);
-			if (body >= 0) {
-				captureOrigin(body);
-				zoomedBody = body;
-				globeYaw = 0.0;
-				globePitch = 0.0;
-				globeZoom = 1.0;
-			}
+		int body = bodyAt(mouseX, mouseY);
+		if (body >= 0) {
+			captureOrigin(body);
+			zoomedBody = body;
+			globeYaw = 0.0;
+			globePitch = 0.0;
+			globeZoom = 1.0;
 		}
 		return true;
 	}
@@ -238,6 +237,10 @@ public class StarMapScreen extends Screen {
 			pressDragged = true;
 		}
 		entry.cancel();
+		if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+			// Right-dragging is only there to cancel the click that would otherwise open a body.
+			return true;
+		}
 		if (zoomedBody >= 0) {
 			globeYaw -= deltaX * DRAG_DEGREES_PER_PIXEL;
 			globePitch = Math.max(-85.0, Math.min(85.0,

@@ -29,9 +29,10 @@ import org.lwjgl.glfw.GLFW;
  *
  * <p>The whole sky above the horizon is drawn with the zenith at the centre of the screen and north
  * up, using exactly the rotation the sky dome uses ({@code SkyState.starMatrix}), so what the chart
- * shows is what the player sees outside. The chart can be dragged, zoomed with the wheel and
- * clicked: picking a star opens a data panel with its name, catalog designation, constellation,
- * magnitude, colour index, distance and both the J2000 and the current horizontal position.
+ * shows is what the player sees outside. The left button drags the chart, the wheel zooms it, and
+ * right-clicking a star or a deep-sky object opens a data panel with its name, catalogue
+ * designation, constellation, magnitude, colour index, distance and both the J2000 and the current
+ * horizontal position.
  *
  * <p>Shift (press once) overlays the traditional constellation figures. During daylight the wheel
  * is replaced by a notice plus the sunset countdown, since there is nothing to observe.
@@ -846,18 +847,21 @@ public class StarChartScreen extends Screen {
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && this.client != null && this.client.world != null
-				&& this.client.player != null) {
-			entry.cancel();
-			pressX = mouseX;
-			pressY = mouseY;
+		if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT && button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+			return super.mouseClicked(mouseX, mouseY, button);
+		}
+		entry.cancel();
+		pressX = mouseX;
+		pressY = mouseY;
+		if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && this.client != null
+				&& this.client.world != null && this.client.player != null) {
+			// Right button picks a star and holding it down marks that star in the sky.
 			selectStarNear(mouseX, mouseY);
-			// Holding the star that was just picked marks it in the sky.
 			holdStar = selected;
 			holdStartNanos = System.nanoTime();
-			return true;
 		}
-		return super.mouseClicked(mouseX, mouseY, button);
+		// The left button is reserved for dragging the chart.
+		return true;
 	}
 
 	private void selectStarNear(double mouseX, double mouseY) {
@@ -911,9 +915,11 @@ public class StarChartScreen extends Screen {
 		if (Math.hypot(mouseX - pressX, mouseY - pressY) > MARK_DRAG_CANCEL_PIXELS) {
 			holdStar = -1;
 		}
-		panX += deltaX;
-		panY += deltaY;
-		clampPan();
+		if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+			panX += deltaX;
+			panY += deltaY;
+			clampPan();
+		}
 		return true;
 	}
 
