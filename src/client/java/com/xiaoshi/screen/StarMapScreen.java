@@ -1,7 +1,7 @@
 package com.xiaoshi.screen;
 
 import com.xiaoshi.astro.PlanetPosition;
-import com.xiaoshi.hud.EnterAnimation;
+import com.xiaoshi.hud.EntryZoom;
 import com.xiaoshi.hud.OrbitDiagram;
 import com.xiaoshi.hud.PlanetView;
 import com.xiaoshi.hud.SkyDebugHud;
@@ -57,7 +57,7 @@ public class StarMapScreen extends Screen {
 	private double pressX;
 	private double pressY;
 	private boolean pressDragged;
-	private final EnterAnimation enter = new EnterAnimation();
+	private final EntryZoom entry = new EntryZoom();
 
 	public StarMapScreen(Screen parent) {
 		super(Text.translatable("screen.starradiance.map.title"));
@@ -95,14 +95,15 @@ public class StarMapScreen extends Screen {
 			return;
 		}
 		updateZoom();
-		enter.push(context, this.width, this.height);
 		double latitude = Celestial.latitudeOf(client.player.getZ());
 		Celestial.SkyState state = Celestial.compute(client.world.getTimeOfDay(), latitude);
 
 		double chartOpacity = 1.0 - progress;
 		if (chartOpacity > 0.01) {
+			// The chart eases in from further away; the interface itself does not move.
+			double viewZoom = chartZoom * entry.factor();
 			double[][] bodies = OrbitDiagram.render(context, client, state, 0, 0, this.width, this.height,
-				transparent, chartOpacity, chartZoom, chartPanX, chartPanY, zoomedBody);
+				transparent, chartOpacity, viewZoom, chartPanX, chartPanY, zoomedBody);
 			hits = bodies != null ? bodies : new double[0][];
 			if (zoomedBody >= 0) {
 				captureOrigin(zoomedBody);
@@ -120,7 +121,6 @@ public class StarMapScreen extends Screen {
 		if (transparent) {
 			SkyDebugHud.renderTextBlock(context, client, state, latitude);
 		}
-		enter.pop(context);
 	}
 
 	/** Rings the body under the cursor and shows its name, so the click target is obvious. */
@@ -197,6 +197,7 @@ public class StarMapScreen extends Screen {
 		}
 		// Only remember the press: dragging either pans the chart or turns the globe, and the
 		// action itself happens on release so a drag never counts as a click.
+		entry.cancel();
 		pressX = mouseX;
 		pressY = mouseY;
 		pressDragged = false;
@@ -236,6 +237,7 @@ public class StarMapScreen extends Screen {
 		if (Math.hypot(mouseX - pressX, mouseY - pressY) > 3.0) {
 			pressDragged = true;
 		}
+		entry.cancel();
 		if (zoomedBody >= 0) {
 			globeYaw -= deltaX * DRAG_DEGREES_PER_PIXEL;
 			globePitch = Math.max(-85.0, Math.min(85.0,
@@ -253,6 +255,7 @@ public class StarMapScreen extends Screen {
 		if (zoomedBody >= 0) {
 			globeZoom = clamp(globeZoom * Math.pow(1.25, verticalAmount), MIN_GLOBE_ZOOM, MAX_GLOBE_ZOOM);
 		} else {
+			entry.cancel();
 			chartZoom = clamp(chartZoom * Math.pow(1.25, verticalAmount), MIN_CHART_ZOOM, MAX_CHART_ZOOM);
 		}
 		return true;
@@ -272,6 +275,7 @@ public class StarMapScreen extends Screen {
 			return true;
 		}
 		if (keyCode == GLFW.GLFW_KEY_R) {
+			entry.cancel();
 			chartZoom = 1.0;
 			chartPanX = 0.0;
 			chartPanY = 0.0;

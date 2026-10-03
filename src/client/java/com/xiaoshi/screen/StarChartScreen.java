@@ -4,7 +4,7 @@ import com.xiaoshi.astro.AstroTime;
 import com.xiaoshi.astro.Precession;
 import com.xiaoshi.astro.SkyChartProjection;
 import com.xiaoshi.hud.OrbitDiagram;
-import com.xiaoshi.hud.EnterAnimation;
+import com.xiaoshi.hud.EntryZoom;
 import com.xiaoshi.sky.Celestial;
 import com.xiaoshi.sky.ConstellationCatalog;
 import com.xiaoshi.sky.DeepSkyCatalog;
@@ -84,7 +84,9 @@ public class StarChartScreen extends Screen {
 	private long markedMessageUntil;
 	private double pressX;
 	private double pressY;
-	private final EnterAnimation enter = new EnterAnimation();
+	private final EntryZoom entry = new EntryZoom();
+	/** The view zoom the last frame was drawn with, so click picking matches the screen exactly. */
+	private double renderedZoom = MIN_ZOOM;
 
 	/** J2000 equatorial unit vectors, one per catalogue entry (built once). */
 	private float[] baseVectors;
@@ -131,8 +133,6 @@ public class StarChartScreen extends Screen {
 			return;
 		}
 		context.fill(0, 0, this.width, this.height, BELOW_HORIZON);
-		// The backdrop covers the window immediately; the star wheel itself zooms into place.
-		enter.push(context, this.width, this.height);
 
 		double latitude = Celestial.latitudeOf(client.player.getZ());
 		Celestial.SkyState state = Celestial.compute(client.world.getTimeOfDay(), latitude);
@@ -141,14 +141,16 @@ public class StarChartScreen extends Screen {
 		if (SkyPalette.starBrightness(state) <= 0.0) {
 			renderDaylight(context, font, client, state, latitude);
 			renderHint(context, font);
-			enter.pop(context);
 			return;
 		}
 
 		double baseRadius = Math.min(this.width, this.height) * 0.5 - 26.0;
+		// The view itself eases forward from further away while the interface stays put.
+		double viewZoom = zoom * entry.factor();
+		renderedZoom = viewZoom;
 		SkyChartProjection projection = new SkyChartProjection(this.width / 2.0, this.height / 2.0,
-			baseRadius, zoom, panX, panY);
-		double magnitudeLimit = magnitudeLimit();
+			baseRadius, viewZoom, panX, panY);
+		double magnitudeLimit = magnitudeLimit(viewZoom);
 		StarCatalog catalog = StarCatalog.load();
 
 		fillDisc(context, projection, SKY_DISC);
@@ -157,7 +159,7 @@ public class StarChartScreen extends Screen {
 			drawConstellations(context, font, projection, state);
 		}
 		if (catalog != null) {
-			collectVisible(catalog, state, projection, magnitudeLimit());
+			collectVisible(catalog, state, projection, magnitudeLimit);
 			drawStars(context, catalog, state);
 		}
 		collectDeepSky(state, projection);
@@ -184,13 +186,12 @@ public class StarChartScreen extends Screen {
 			Text hint = Text.translatable("hud.starradiance.chart.click");
 			context.drawText(font, hint, this.width - font.getWidth(hint) - 10, 26, TEXT_DIM, true);
 		}
-		enter.pop(context);
 	}
 
 	// ------------------------------------------------------------------ geometry passes
 
-	private double magnitudeLimit() {
-		double value = 6.5 + 0.5 * (Math.log(zoom) / Math.log(2.0));
+	private double magnitudeLimit(double viewZoom) {
+		double value = 6.5 + 0.5 * (Math.log(viewZoom) / Math.log(2.0));
 		return Math.max(4.5, Math.min(8.0, value));
 	}
 
@@ -836,6 +837,7 @@ public class StarChartScreen extends Screen {
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
 		if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && this.client != null && this.client.world != null
 				&& this.client.player != null) {
+			entry.cancel();
 			pressX = mouseX;
 			pressY = mouseY;
 			selectStarNear(mouseX, mouseY);
@@ -876,8 +878,8 @@ public class StarChartScreen extends Screen {
 			Celestial.latitudeOf(this.client.player.getZ()));
 		double baseRadius = Math.min(this.width, this.height) * 0.5 - 26.0;
 		SkyChartProjection projection = new SkyChartProjection(this.width / 2.0, this.height / 2.0,
-			baseRadius, zoom, panX, panY);
-		collectVisible(catalog, state, projection, magnitudeLimit());
+			baseRadius, renderedZoom, panX, panY);
+		collectVisible(catalog, state, projection, magnitudeLimit(renderedZoom));
 		double best = PICK_RADIUS * PICK_RADIUS;
 		int found = -1;
 		for (int k = 0; k < visibleStars; k++) {
@@ -894,6 +896,7 @@ public class StarChartScreen extends Screen {
 
 	@Override
 	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+		entry.cancel();
 		if (Math.hypot(mouseX - pressX, mouseY - pressY) > MARK_DRAG_CANCEL_PIXELS) {
 			holdStar = -1;
 		}
@@ -915,6 +918,7 @@ public class StarChartScreen extends Screen {
 		if (verticalAmount == 0.0) {
 			return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
 		}
+		entry.cancel();
 		double target = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * Math.pow(1.25, verticalAmount)));
 		if (target != zoom) {
 			// Keep the sky point under the cursor anchored while the scale changes.
@@ -949,6 +953,7 @@ public class StarChartScreen extends Screen {
 			return true;
 		}
 		if (keyCode == GLFW.GLFW_KEY_R) {
+			entry.cancel();
 			zoom = MIN_ZOOM;
 			panX = 0.0;
 			panY = 0.0;
