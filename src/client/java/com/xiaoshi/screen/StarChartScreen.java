@@ -4,6 +4,7 @@ import com.xiaoshi.astro.AstroTime;
 import com.xiaoshi.astro.Precession;
 import com.xiaoshi.astro.SkyChartProjection;
 import com.xiaoshi.hud.OrbitDiagram;
+import com.xiaoshi.hud.EnterAnimation;
 import com.xiaoshi.sky.Celestial;
 import com.xiaoshi.sky.ConstellationCatalog;
 import com.xiaoshi.sky.DeepSkyCatalog;
@@ -83,6 +84,7 @@ public class StarChartScreen extends Screen {
 	private long markedMessageUntil;
 	private double pressX;
 	private double pressY;
+	private final EnterAnimation enter = new EnterAnimation();
 
 	/** J2000 equatorial unit vectors, one per catalogue entry (built once). */
 	private float[] baseVectors;
@@ -129,6 +131,8 @@ public class StarChartScreen extends Screen {
 			return;
 		}
 		context.fill(0, 0, this.width, this.height, BELOW_HORIZON);
+		// The backdrop covers the window immediately; the star wheel itself zooms into place.
+		enter.push(context, this.width, this.height);
 
 		double latitude = Celestial.latitudeOf(client.player.getZ());
 		Celestial.SkyState state = Celestial.compute(client.world.getTimeOfDay(), latitude);
@@ -137,6 +141,7 @@ public class StarChartScreen extends Screen {
 		if (SkyPalette.starBrightness(state) <= 0.0) {
 			renderDaylight(context, font, client, state, latitude);
 			renderHint(context, font);
+			enter.pop(context);
 			return;
 		}
 
@@ -179,6 +184,7 @@ public class StarChartScreen extends Screen {
 			Text hint = Text.translatable("hud.starradiance.chart.click");
 			context.drawText(font, hint, this.width - font.getWidth(hint) - 10, 26, TEXT_DIM, true);
 		}
+		enter.pop(context);
 	}
 
 	// ------------------------------------------------------------------ geometry passes

@@ -1,6 +1,7 @@
 package com.xiaoshi.screen;
 
 import com.xiaoshi.astro.PlanetPosition;
+import com.xiaoshi.hud.EnterAnimation;
 import com.xiaoshi.hud.OrbitDiagram;
 import com.xiaoshi.hud.PlanetView;
 import com.xiaoshi.hud.SkyDebugHud;
@@ -56,6 +57,7 @@ public class StarMapScreen extends Screen {
 	private double pressX;
 	private double pressY;
 	private boolean pressDragged;
+	private final EnterAnimation enter = new EnterAnimation();
 
 	public StarMapScreen(Screen parent) {
 		super(Text.translatable("screen.starradiance.map.title"));
@@ -93,6 +95,7 @@ public class StarMapScreen extends Screen {
 			return;
 		}
 		updateZoom();
+		enter.push(context, this.width, this.height);
 		double latitude = Celestial.latitudeOf(client.player.getZ());
 		Celestial.SkyState state = Celestial.compute(client.world.getTimeOfDay(), latitude);
 
@@ -117,6 +120,7 @@ public class StarMapScreen extends Screen {
 		if (transparent) {
 			SkyDebugHud.renderTextBlock(context, client, state, latitude);
 		}
+		enter.pop(context);
 	}
 
 	/** Rings the body under the cursor and shows its name, so the click target is obvious. */
