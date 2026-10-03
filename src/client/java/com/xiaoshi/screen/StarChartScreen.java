@@ -12,6 +12,8 @@ import com.xiaoshi.sky.SkyPalette;
 import com.xiaoshi.sky.StarCatalog;
 import com.xiaoshi.sky.StarFieldRenderer;
 import com.xiaoshi.sky.StarMeta;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -634,22 +636,10 @@ public class StarChartScreen extends Screen {
 	private void drawInfoPanel(DrawContext context, TextRenderer font, Celestial.SkyState state,
 			StarCatalog catalog) {
 		StarMeta meta = StarMeta.get();
-		int panelWidth = 196;
-		int x = this.width - panelWidth - 8;
-		int y = 38;
-		int rows = 8;
-		int height = 12 + rows * 11;
-		context.fill(x, y, x + panelWidth, y + height, PANEL_BACKGROUND);
-		context.fill(x, y, x + panelWidth, y + 1, PANEL_BORDER);
-		context.fill(x, y + height - 1, x + panelWidth, y + height, PANEL_BORDER);
-
-		int lineY = y + 5;
 		String name = displayName(meta, selected);
-		context.drawText(font, name, x + 6, lineY, TEXT, true);
-		lineY += 11;
 		if (meta == null || selected >= meta.count) {
-			context.drawText(font, Text.translatable("hud.starradiance.chart.dataMissing"), x + 6, lineY,
-				TEXT_DIM, true);
+			drawDataPanel(context, font, name, List.<String[]>of(new String[] {
+				"", Text.translatable("hud.starradiance.chart.dataMissing").getString() }));
 			return;
 		}
 		String constellation = meta.constellation[selected] >= 0
@@ -657,29 +647,23 @@ public class StarChartScreen extends Screen {
 				+ meta.constellations[meta.constellation[selected]])
 			: unknown();
 		double[] horizontal = altAzOf(catalog, state, selected);
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.designation",
-			meta.designation[selected]);
-		lineY += 11;
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.constellation", constellation);
-		lineY += 11;
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.magnitude",
-			num("%.2f", catalog.magnitude[selected]));
-		lineY += 11;
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.color",
-			num("%+.2f", catalog.bv[selected]) + " / " + nonEmpty(meta.spectral[selected]));
-		lineY += 11;
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.distance",
+		List<String[]> rows = new ArrayList<>();
+		rows.add(row("hud.starradiance.chart.field.designation", meta.designation[selected]));
+		rows.add(row("hud.starradiance.chart.field.constellation", constellation));
+		rows.add(row("hud.starradiance.chart.field.magnitude", num("%.2f", catalog.magnitude[selected])));
+		rows.add(row("hud.starradiance.chart.field.color",
+			num("%+.2f", catalog.bv[selected]) + " / " + nonEmpty(meta.spectral[selected])));
+		rows.add(row("hud.starradiance.chart.field.distance",
 			meta.distanceCentily[selected] > 0
 				? Text.translatable("hud.starradiance.chart.value.distance",
 					num("%.2f", meta.distanceCentily[selected] / 100.0)).getString()
-				: unknown());
-		lineY += 11;
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.radec",
-			num("%.3f", catalog.raDeg[selected] / 15.0) + "h  " + num("%+.3f", catalog.decDeg[selected]));
-		lineY += 11;
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.altaz",
+				: unknown()));
+		rows.add(row("hud.starradiance.chart.field.radec",
+			num("%.3f", catalog.raDeg[selected] / 15.0) + "h  " + num("%+.3f", catalog.decDeg[selected])));
+		rows.add(row("hud.starradiance.chart.field.altaz",
 			horizontal == null ? unknown()
-				: num("%.1f", horizontal[0]) + "  " + num("%.1f", horizontal[1]));
+				: num("%.1f", horizontal[0]) + "  " + num("%.1f", horizontal[1])));
+		drawDataPanel(context, font, name, rows);
 	}
 
 	/** The data panel for a galaxy, nebula or cluster. */
@@ -689,39 +673,23 @@ public class StarChartScreen extends Screen {
 			return;
 		}
 		int i = selectedDeepSky;
-		int panelWidth = 196;
-		int x = this.width - panelWidth - 8;
-		int y = 38;
-		int height = 12 + 8 * 11;
-		context.fill(x, y, x + panelWidth, y + height, PANEL_BACKGROUND);
-		context.fill(x, y, x + panelWidth, y + 1, PANEL_BORDER);
-		context.fill(x, y + height - 1, x + panelWidth, y + height, PANEL_BORDER);
-
-		int lineY = y + 5;
-		context.drawText(font, deepSkyName(catalog, i), x + 6, lineY, TEXT, true);
-		lineY += 11;
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.designation", catalog.id[i]);
-		lineY += 11;
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.type",
-			I18n.translate("hud.starradiance.deepsky.type." + DeepSkyCatalog.TYPE_KEYS[catalog.type[i]]));
-		lineY += 11;
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.constellation",
-			I18n.translate("constellation.starradiance." + catalog.constellation[i]));
-		lineY += 11;
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.magnitude",
-			num("%.1f", catalog.magnitude[i]));
-		lineY += 11;
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.size",
+		List<String[]> rows = new ArrayList<>();
+		rows.add(row("hud.starradiance.chart.field.designation", catalog.id[i]));
+		rows.add(row("hud.starradiance.chart.field.type",
+			I18n.translate("hud.starradiance.deepsky.type." + DeepSkyCatalog.TYPE_KEYS[catalog.type[i]])));
+		rows.add(row("hud.starradiance.chart.field.constellation",
+			I18n.translate("constellation.starradiance." + catalog.constellation[i])));
+		rows.add(row("hud.starradiance.chart.field.magnitude", num("%.1f", catalog.magnitude[i])));
+		rows.add(row("hud.starradiance.chart.field.size",
 			Text.translatable("hud.starradiance.chart.value.size",
-				num("%.1f", catalog.majorArcmin[i])).getString());
-		lineY += 11;
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.radec",
-			num("%.3f", catalog.raDeg[i] / 15.0) + "h  " + num("%+.3f", catalog.decDeg[i]));
-		lineY += 11;
+				num("%.1f", catalog.majorArcmin[i])).getString()));
+		rows.add(row("hud.starradiance.chart.field.radec",
+			num("%.3f", catalog.raDeg[i] / 15.0) + "h  " + num("%+.3f", catalog.decDeg[i])));
 		double[] horizontal = deepSkyAltAz(catalog, state, i);
-		drawRow(context, font, x + 6, lineY, "hud.starradiance.chart.field.altaz",
+		rows.add(row("hud.starradiance.chart.field.altaz",
 			horizontal == null ? unknown()
-				: num("%.1f", horizontal[0]) + "  " + num("%.1f", horizontal[1]));
+				: num("%.1f", horizontal[0]) + "  " + num("%.1f", horizontal[1])));
+		drawDataPanel(context, font, deepSkyName(catalog, i), rows);
 	}
 
 	private static String deepSkyName(DeepSkyCatalog catalog, int index) {
@@ -742,10 +710,45 @@ public class StarChartScreen extends Screen {
 		};
 	}
 
-	private void drawRow(DrawContext context, TextRenderer font, int x, int y, String key, String value) {
-		String label = I18n.translate(key);
-		context.drawText(font, label + ":", x, y, TEXT_DIM, true);
-		context.drawText(font, value, x + 66, y, TEXT, true);
+	private static String[] row(String key, String value) {
+		return new String[] { I18n.translate(key), value };
+	}
+
+	/**
+	 * Draws the info panel. The value column is placed just past the widest label instead of at a
+	 * fixed offset, because the translated field names vary a lot in width (the Chinese labels in
+	 * particular used to run into their values).
+	 */
+	private void drawDataPanel(DrawContext context, TextRenderer font, String title, List<String[]> rows) {
+		int labelWidth = 0;
+		int valueWidth = 0;
+		for (String[] row : rows) {
+			labelWidth = Math.max(labelWidth, row[0].isEmpty() ? 0 : font.getWidth(row[0] + ":"));
+			valueWidth = Math.max(valueWidth, font.getWidth(row[1]));
+		}
+		int labelX = 6;
+		int valueX = labelX + (labelWidth == 0 ? 0 : labelWidth + 8);
+		int panelWidth = Math.max(200, valueX + valueWidth + 8);
+		panelWidth = Math.min(panelWidth, Math.max(120, this.width - 24));
+		int x = this.width - panelWidth - 8;
+		int y = 38;
+		int height = 12 + (rows.size() + 1) * 11;
+		context.fill(x, y, x + panelWidth, y + height, PANEL_BACKGROUND);
+		context.fill(x, y, x + panelWidth, y + 1, PANEL_BORDER);
+		context.fill(x, y + height - 1, x + panelWidth, y + height, PANEL_BORDER);
+
+		int lineY = y + 5;
+		context.drawText(font, title, x + labelX, lineY, TEXT, true);
+		lineY += 11;
+		for (String[] row : rows) {
+			if (row[0].isEmpty()) {
+				context.drawText(font, row[1], x + labelX, lineY, TEXT_DIM, true);
+			} else {
+				context.drawText(font, row[0] + ":", x + labelX, lineY, TEXT_DIM, true);
+				context.drawText(font, row[1], x + valueX, lineY, TEXT, true);
+			}
+			lineY += 11;
+		}
 	}
 
 	private String displayName(StarMeta meta, int index) {
