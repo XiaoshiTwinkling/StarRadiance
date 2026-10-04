@@ -49,9 +49,15 @@ public final class MoonTextures {
 
 	private static void registerOne(Identifier id) {
 		MinecraftClient client = MinecraftClient.getInstance();
+		//? if >=1.21.4 {
+		/*if (client.getTextureManager().getTexture(id) != null) {
+			return;
+		}*/
+		//?} else {
 		if (client.getTextureManager().getOrDefault(id, null) != null) {
 			return;
 		}
+		//?}
 		client.getTextureManager().registerTexture(id, new MipmappedTexture(id));
 		StarRadiance.LOGGER.info("Registered mipmapped moon texture {}", id);
 	}
@@ -69,13 +75,32 @@ public final class MoonTextures {
 	}
 
 	/** A texture that uploads a full CPU-built mip chain and filters trilinearly. */
-	private static final class MipmappedTexture extends AbstractTexture {
+	private static final class MipmappedTexture
+		//? if >=1.21.4 {
+		/*extends net.minecraft.client.texture.ReloadableTexture*/
+		//?} else {
+		extends AbstractTexture
+		//?}
+	{
+		//? if <1.21.4 {
 		private final Identifier location;
+		//?}
 
 		MipmappedTexture(Identifier location) {
+			//? if >=1.21.4 {
+			/*super(location);*/
+			//?} else {
 			this.location = location;
+			//?}
 		}
 
+		//? if >=1.21.4 {
+		/*@Override
+		public net.minecraft.client.texture.TextureContents loadContents(ResourceManager manager)
+				throws IOException {
+			return net.minecraft.client.texture.TextureContents.load(manager, getId());
+		}*/
+		//?} else {
 		@Override
 		public void load(ResourceManager manager) throws IOException {
 			NativeImage image = null;
@@ -107,5 +132,6 @@ public final class MoonTextures {
 				}
 			}
 		}
+		//?}
 	}
 }

@@ -57,6 +57,12 @@ docs/VERSIONING.md            本文档
 版本切换会**就地重写** `src/` 里的条件注释，并改写控制器里的 `stonecutter active "..."`，
 所以提交前必须 `Reset active project`；`git status` 干净即代表共享源码处于 1.21.1 状态。
 
+> [!IMPORTANT]
+> **手写条件注释之后，必须先 `Refresh active project` 再编译当前激活版本。**
+> 共享源码里条件块的状态是按"激活版本"维护的：新增的 `//? if` 块在你当前激活的版本下
+> 需要 Stonecutter 处理一次（该注释的注释、该展开的展开）。直接编译会出现一堆莫名其妙的
+> "找不到符号"，其实只是状态没刷新。构建**非**激活版本的节点不受影响（它读的是生成源码）。
+
 ## 4. 版本条件写法
 
 ```java
@@ -109,6 +115,21 @@ Stonecutter 本身还能预处理 `.java`、`.json5`、`.fsh`、`.vsh`（C 风�
 
 ## 7. 当前状态
 
-- 1.21.1：基线，`build` / `verifyEphemeris` / `checkLangKeys` 必须全绿。
-- 1.21.4 / 1.21.8：**仅完成接线**（依赖、属性、构建节点），代码尚未移植；
-  `buildAll` 在这两个版本上失败属于预期，CI 对应矩阵项暂时 `continue-on-error`。
+- 1.21.1：基线，`build` / `verifyEphemeris` / `checkLangKeys` 全绿。
+- 1.21.4：**已移植完成**，三个任务同样全绿；产物 `starradiance-1.0.0+1.21.4.jar`。
+- 1.21.8：仅完成接线（依赖、属性、构建节点），代码尚未移植；CI 对应矩阵项仍 `continue-on-error`。
+- 成品统一放仓库根目录的 `Result/`（已 gitignore）：1.21.1 与 1.21.4 的 jar 都在里面。
+
+### 1.21.4 实测确认的 API 变更（1.21.5+ 多半会再变一次）
+
+| 旧写法（1.21.1） | 1.21.4 写法 |
+|---|---|
+| `RenderSystem.setShader(() -> program)` | `RenderSystem.setShader(program)` |
+| `GameRenderer.getPositionColorProgram()` 等 | `ShaderProgramKeys.POSITION_COLOR` / `POSITION_TEX` / `POSITION` |
+| Fabric `CoreShaderRegistrationCallback` | 自定义 `ShaderProgramKey(Identifier.of(ns, "core/name"), VertexFormats…, Defines.EMPTY)`，见 `CoreShaderKeys` |
+| `new VertexBuffer(VertexBuffer.Usage.STATIC)` | `new VertexBuffer(GlUsage.STATIC_WRITE)`（注意不是 `STATIC`） |
+| `BackgroundRenderer.clearFog()` | `RenderSystem.setShaderFog(Fog.DUMMY)` |
+| `TextureManager.getOrDefault(id, null)` | `TextureManager.getTexture(id)` |
+| `new SimpleFramebuffer(w, h, false, false)` | `new SimpleFramebuffer(w, h, false)` |
+| `AbstractTexture#load(ResourceManager)` | 继承 `ReloadableTexture(Identifier)` 并实现 `loadContents(ResourceManager)` |
+| 核心着色器 JSON `"vertex": "starradiance:sky"` | `"starradiance:core/sky"`（见 `shader_variants/1.21.4/`） |

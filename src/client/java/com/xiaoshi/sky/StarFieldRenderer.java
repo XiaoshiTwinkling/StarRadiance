@@ -276,7 +276,7 @@ public final class StarFieldRenderer {
 		}
 		buffer = new VertexBuffer(
 			//? if >=1.21.4 {
-			/*net.minecraft.client.gl.GlUsage.STATIC
+			/*net.minecraft.client.gl.GlUsage.STATIC_WRITE
 			*///?} else {
 			VertexBuffer.Usage.STATIC
 			//?}

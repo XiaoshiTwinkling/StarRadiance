@@ -13,7 +13,9 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+//? if <1.21.4 {
 import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
+//?}
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.option.KeyBinding;
@@ -44,6 +46,9 @@ public class StarRadianceClient implements ClientModInitializer {
 		ClientLifecycleEvents.CLIENT_STARTED.register(client -> IrisCompat.invalidateCache());
 
 		// Register the custom sun/moon shaders; the callback is (re)invoked on every resource reload.
+		// 1.21.4 dropped this Fabric API: core shaders are resolved from a ShaderProgramKey instead
+		// (see CoreShaderKeys), so there is nothing to register here.
+		//? if <1.21.4 {
 		CoreShaderRegistrationCallback.EVENT.register(context -> {
 			context.register(MOON_SHADER, VertexFormats.POSITION_TEXTURE, program -> {
 				MoonRenderer.setProgram(program);
@@ -66,6 +71,7 @@ public class StarRadianceClient implements ClientModInitializer {
 				StarRadiance.LOGGER.info("Loaded core shader {}", PANEL_BLUR_SHADER);
 			});
 		});
+		//?}
 
 		// Register the moon textures with a mip chain (once per resource reload).
 		ResourceManagerHelper.get(net.minecraft.resource.ResourceType.CLIENT_RESOURCES)
