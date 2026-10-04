@@ -71,11 +71,11 @@ processResources {
 	}
 }
 
-// Core shaders are whole files Stonecutter's comment syntax cannot adapt, so they are kept per
-// shader-format era and only the matching tree is copied into the jar. 1.21.5 rewrote the
-// rendering pipeline (and with it the core shader format); 1.21.1 through 1.21.4 share the
-// original one. Add src/client/resources/shader_variants/1.21.5 when porting that version.
-def shaderEra = stonecutter.eval(minecraftVersion, '>=1.21.5') ? '1.21.5' : '1.21.1'
+// The core shader *definitions* (JSON) cannot carry comments, so they are kept per shader-format
+// era and only the matching tree is copied into the jar; the GLSL itself is shared. 1.21.4
+// namespaced the program ids ("starradiance:core/sky" instead of "starradiance:sky"), and 1.21.5
+// rewrote the pipeline format entirely. Add shader_variants/1.21.5 when porting that version.
+def shaderEra = stonecutter.eval(minecraftVersion, '>=1.21.4') ? '1.21.4' : '1.21.1'
 processClientResources {
 	inputs.property "shaderEra", shaderEra
 	// The variant trees are sources for the step below, not resources of their own.
