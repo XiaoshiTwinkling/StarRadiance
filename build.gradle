@@ -94,8 +94,11 @@ processClientResources {
 	}
 }
 
+// 1.20.5 was the release that moved Minecraft to Java 21; everything before it is Java 17.
+def javaVersion = stonecutter.eval(minecraftVersion, '>=1.20.5') ? 21 : 17
+
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = javaVersion
 }
 
 java {
@@ -104,8 +107,8 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.toVersion(javaVersion)
+	targetCompatibility = JavaVersion.toVersion(javaVersion)
 }
 
 jar {
