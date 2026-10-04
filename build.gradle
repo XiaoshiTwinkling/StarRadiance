@@ -78,11 +78,11 @@ processResources {
 // The 1.21.4 folder is the name of that second era; it applies to 1.21.2 through 1.21.4.
 def shaderEra = stonecutter.eval(minecraftVersion, '>=1.21.2') ? '1.21.4' : '1.21.1'
 
-// 1.21.2 is the odd one out on attachments: its Fabric API build (0.106.1) predates syncWith, while
-// both 1.21.1 (0.116.17) and 1.21.3 (0.114.1) have it. A constant keeps that out of the Java source
-// as a version range that would be wrong in one direction or the other.
+// Attachment syncing arrived in Fabric API ~0.106: 1.21.1 (0.116.17), 1.21.3 (0.114.1) and 1.21.4
+// (0.119.4) have it, while 1.21.2 (0.106.1) and every 1.20.x build (<= 0.99.4) do not. A constant
+// keeps that out of the Java source, where no single version range would be right.
 stonecutter {
-	constants['attachment_sync'] = minecraftVersion != '1.21.2'
+	constants['attachment_sync'] = minecraftVersion.startsWith('1.21') && minecraftVersion != '1.21.2'
 }
 
 processClientResources {
