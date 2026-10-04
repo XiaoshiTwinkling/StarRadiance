@@ -245,7 +245,13 @@ public final class MoonRenderer {
 			}
 		}
 		vertexCount = verts;
-		buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+		buffer = new VertexBuffer(
+			//? if >=1.21.4 {
+			/*net.minecraft.client.gl.GlUsage.STATIC
+			*///?} else {
+			VertexBuffer.Usage.STATIC
+			//?}
+		);
 		BuiltBuffer builtBuffer = builder.end();
 		buffer.bind();
 		buffer.upload(builtBuffer);

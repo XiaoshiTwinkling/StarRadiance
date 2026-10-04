@@ -46,3 +46,6 @@ tools/out_8k/
 # stonecutter: generated per-version projects (the shared sources stay in the root src/)
 versions/*/build/
 versions/*/.gradle/
+
+# collected build outputs (regenerate with tools/collect_results.* or by hand)
+Result/

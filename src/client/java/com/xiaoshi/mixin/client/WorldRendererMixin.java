@@ -284,7 +284,11 @@ public abstract class WorldRendererMixin {
 		right = rolledRight;
 		up = rolledUp;
 
+		//? if >=1.21.4 {
+		/*RenderSystem.setShader(net.minecraft.client.gl.ShaderProgramKeys.POSITION_TEX);
+		*///?} else {
 		RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+		//?}
 		RenderSystem.setShaderTexture(0, texture);
 		RenderSystem.setShaderColor(cloud, cloud, cloud, 1.0F);
 
@@ -331,9 +335,18 @@ public abstract class WorldRendererMixin {
 		matrices.multiply(align);
 
 		RenderSystem.setShaderColor((float) brightness, (float) brightness, (float) brightness, 1.0F);
+		//? if >=1.21.4 {
+		/*RenderSystem.setShaderFog(net.minecraft.client.render.Fog.DUMMY);
+		*///?} else {
 		net.minecraft.client.render.BackgroundRenderer.clearFog();
+		//?}
 		this.starsBuffer.bind();
+		//? if >=1.21.4 {
+		/*this.starsBuffer.draw(matrices.peek().getPositionMatrix(), projectionMatrix,
+			RenderSystem.setShader(net.minecraft.client.gl.ShaderProgramKeys.POSITION));
+		*///?} else {
 		this.starsBuffer.draw(matrices.peek().getPositionMatrix(), projectionMatrix, GameRenderer.getPositionProgram());
+		//?}
 		this.starsBuffer.unbind();
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 		matrices.pop();

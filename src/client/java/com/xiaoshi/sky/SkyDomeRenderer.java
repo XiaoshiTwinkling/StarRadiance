@@ -45,12 +45,8 @@ public final class SkyDomeRenderer {
 
 	/** Draws the dome; returns true when our own core shader could be used for it. */
 	public static boolean draw(MatrixStack matrices, Celestial.SkyState state) {
-		ShaderProgram shader = program;
-		if (shader != null) {
-			RenderSystem.setShader(() -> shader);
-		} else {
-			RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-		}
+		// The dome shares the star field's core shader (both are plain POSITION_COLOR geometry).
+		ShaderProgram shader = currentShader();
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 		Matrix4f m = matrices.peek().getPositionMatrix();
 
@@ -79,6 +75,17 @@ public final class SkyDomeRenderer {
 		}
 		BufferRenderer.drawWithGlobalProgram(builder.end());
 		return shader != null;
+	}
+
+	/** Binds and returns the dome program; 1.21.4 resolves it from the shared sky key. */
+	private static ShaderProgram currentShader() {
+		//? if >=1.21.4 {
+		/*return RenderSystem.setShader(StarFieldRenderer.SKY_KEY);
+		*///?} else {
+		ShaderProgram shader = program != null ? program : GameRenderer.getPositionColorProgram();
+		RenderSystem.setShader(() -> shader);
+		return shader;
+		//?}
 	}
 
 	private static void skyVertex(BufferBuilder builder, Matrix4f m, double elevationDeg, double azimuthRad, double radius, Celestial.SkyState state, double sunAz, double day, double night, Vec3d zenith, Vec3d horizon, Vec3d belowHorizon) {

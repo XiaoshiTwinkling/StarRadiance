@@ -80,7 +80,11 @@ public final class PanelBlur {
 		// Paint the blurred copy over the panel rectangle on the main framebuffer again.
 		// beginWrite only binds and sets the viewport (it does not clear), so the frame survives.
 		main.beginWrite(true);
+		//? if >=1.21.4 {
+		/*RenderSystem.setShader(net.minecraft.client.gl.ShaderProgramKeys.POSITION_TEX);
+		*///?} else {
 		RenderSystem.setShader(net.minecraft.client.render.GameRenderer::getPositionTexProgram);
+		//?}
 		RenderSystem.setShaderTexture(0, vertical.getColorAttachment());
 		RenderSystem.disableDepthTest();
 		RenderSystem.disableBlend();
@@ -108,7 +112,11 @@ public final class PanelBlur {
 		RenderSystem.disableScissor();
 		RenderSystem.disableDepthTest();
 		RenderSystem.disableBlend();
+		//? if >=1.21.4 {
+		/*RenderSystem.setShader(shader);
+		*///?} else {
 		RenderSystem.setShader(() -> shader);
+		//?}
 		RenderSystem.setShaderTexture(0, sourceTexture);
 		target.beginWrite(true);
 		BufferBuilder builder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS,
@@ -127,8 +135,14 @@ public final class PanelBlur {
 		}
 		releaseBuffers();
 		try {
-			horizontal = new SimpleFramebuffer(width, height, false, false);
-			vertical = new SimpleFramebuffer(width, height, false, false);
+			horizontal = new SimpleFramebuffer(width, height, false
+				//? if <1.21.4
+				, false
+			);
+			vertical = new SimpleFramebuffer(width, height, false
+				//? if <1.21.4
+				, false
+			);
 			bufferWidth = width;
 			bufferHeight = height;
 			return true;

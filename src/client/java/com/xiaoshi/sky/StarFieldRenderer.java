@@ -51,6 +51,26 @@ public final class StarFieldRenderer {
 
 	public static boolean drawDiagnostics = false; // temporary debug markers
 
+	//? if >=1.21.4 {
+	/*/^* Core shader key for the star field and the sky dome (1.21.4 resolves core shaders by key). ^/
+	public static final net.minecraft.client.gl.ShaderProgramKey SKY_KEY =
+		new net.minecraft.client.gl.ShaderProgramKey(
+			net.minecraft.util.Identifier.of("starradiance", "core/sky"), VertexFormats.POSITION_COLOR,
+			net.minecraft.client.gl.Defines.EMPTY);
+	*///?}
+
+	/**
+	 * Binds and returns the star field program: our own core shader when it is available, vanilla's
+	 * position_color otherwise.
+	 */
+	private static ShaderProgram currentShader() {
+		//? if >=1.21.4 {
+		/*return RenderSystem.setShader(SKY_KEY);
+		*///?} else {
+		return program != null ? program : GameRenderer.getPositionColorProgram();
+		//?}
+	}
+
 	/** Uses our own shader so Iris cannot remap the starfield onto the pack's procedural sky. */
 	public static void setProgram(ShaderProgram shaderProgram) {
 		program = shaderProgram;
@@ -91,7 +111,7 @@ public final class StarFieldRenderer {
 		// The star quads blend additively, so a full-strength field blows out to white on a dark
 		// night. Held a little under 1.0 the bright stars still read clearly without washing out.
 		double env = Math.max(0.0, Math.min(1.0, twilight * moonless * cloud)) * STAR_BRIGHTNESS;
-		ShaderProgram shader = program != null ? program : GameRenderer.getPositionColorProgram();
+		ShaderProgram shader = currentShader();
 
 		if (drawDiagnostics) {
 			// Full-brightness markers independent of our star buffer/rotation/colour so we can tell
@@ -113,6 +133,7 @@ public final class StarFieldRenderer {
 			0.0F, 0.0F, 0.0F, 1.0F);
 		matrices.multiplyPositionMatrix(rotation);
 
+		//? if <1.21.4
 		RenderSystem.setShader(() -> shader);
 		RenderSystem.setShaderColor((float) env, (float) env, (float) env, 1.0F);
 		RenderSystem.disableDepthTest();
@@ -162,6 +183,7 @@ public final class StarFieldRenderer {
 	/** A camera-facing square of half-extent {@code half} at radius {@link #RADIUS}, centred on a world direction. */
 	private static void drawQuad(MatrixStack matrices, ShaderProgram shader, Vector3f direction,
 			float half, float r, float g, float b, float alpha) {
+		//? if <1.21.4
 		RenderSystem.setShader(() -> shader);
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 		BufferBuilder builder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS,
@@ -252,7 +274,13 @@ public final class StarFieldRenderer {
 			emitCorner(builder, center, t1, t2, -half, -half, rgb, alpha);
 			emitCorner(builder, center, t1, t2, half, -half, rgb, alpha);
 		}
-		buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+		buffer = new VertexBuffer(
+			//? if >=1.21.4 {
+			/*net.minecraft.client.gl.GlUsage.STATIC
+			*///?} else {
+			VertexBuffer.Usage.STATIC
+			//?}
+		);
 		net.minecraft.client.render.BuiltBuffer builtBuffer = builder.end();
 		buffer.bind();
 		buffer.upload(builtBuffer);
