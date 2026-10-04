@@ -117,6 +117,10 @@ Stonecutter 本身还能预处理 `.java`、`.json5`、`.fsh`、`.vsh`（C 风�
 
 - 1.21.1：基线，`build` / `verifyEphemeris` / `checkLangKeys` 全绿。
 - 1.21.4：**已移植完成**，三个任务同样全绿；产物 `starradiance-1.0.0+1.21.4.jar`。
+- 1.21.2 / 1.21.3：已注册节点与依赖（yarn 1.21.2+build.1 / 1.21.3+build.2，
+  Fabric API 0.106.1 / 0.114.1）。**渲染部分与 1.21.4 同代**，但 Fabric 的**数据附件 API 更老**：
+  这两个版本的 Fabric API 缺少 `AttachmentSyncPredicate`，`syncWith(...)` 与
+  `World#getAttached/setAttached` 的形态也不同，`WorldEpoch` 需要按版本分支。这是目前唯一的阻塞点。
 - 1.21.8：仅完成接线（依赖、属性、构建节点），代码尚未移植；CI 对应矩阵项仍 `continue-on-error`。
 - 成品统一放仓库根目录的 `Result/`（已 gitignore）：1.21.1 与 1.21.4 的 jar 都在里面。
 
