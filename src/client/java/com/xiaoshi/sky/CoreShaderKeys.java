@@ -9,7 +9,7 @@ package com.xiaoshi.sky;
  * so the renderers ask for the program through these keys. On 1.21.1 this class is empty.
  */
 public final class CoreShaderKeys {
-	//? if >=1.21.4 {
+	//? if >=1.21.2 {
 	/*public static final net.minecraft.client.gl.ShaderProgramKey MOON = key("moon",
 		net.minecraft.client.render.VertexFormats.POSITION_TEXTURE);
 	public static final net.minecraft.client.gl.ShaderProgramKey SUN = key("sun",

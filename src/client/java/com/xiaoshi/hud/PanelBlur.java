@@ -80,7 +80,7 @@ public final class PanelBlur {
 		// Paint the blurred copy over the panel rectangle on the main framebuffer again.
 		// beginWrite only binds and sets the viewport (it does not clear), so the frame survives.
 		main.beginWrite(true);
-		//? if >=1.21.4 {
+		//? if >=1.21.2 {
 		/*RenderSystem.setShader(net.minecraft.client.gl.ShaderProgramKeys.POSITION_TEX);
 		*///?} else {
 		RenderSystem.setShader(net.minecraft.client.render.GameRenderer::getPositionTexProgram);
@@ -112,7 +112,7 @@ public final class PanelBlur {
 		RenderSystem.disableScissor();
 		RenderSystem.disableDepthTest();
 		RenderSystem.disableBlend();
-		//? if >=1.21.4 {
+		//? if >=1.21.2 {
 		/*RenderSystem.setShader(shader);
 		*///?} else {
 		RenderSystem.setShader(() -> shader);
@@ -136,11 +136,11 @@ public final class PanelBlur {
 		releaseBuffers();
 		try {
 			horizontal = new SimpleFramebuffer(width, height, false
-				//? if <1.21.4
+				//? if <1.21.2
 				, false
 			);
 			vertical = new SimpleFramebuffer(width, height, false
-				//? if <1.21.4
+				//? if <1.21.2
 				, false
 			);
 			bufferWidth = width;

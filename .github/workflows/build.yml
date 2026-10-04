@@ -1,8 +1,8 @@
 # Automatically build the project and run the configured checks for every push and pull request.
 #
-# The job runs once per registered Minecraft version (see settings.gradle). 1.21.1 and 1.21.4 are
-# ported and must pass; 1.21.8 is only wired up so far and its job is allowed to fail until it is
-# ported (see docs/VERSIONING.md).
+# The job runs once per registered Minecraft version (see settings.gradle). 1.21.1 through 1.21.4
+# are ported and must pass; 1.21.8 is only wired up so far and its job is allowed to fail until it
+# is ported (see docs/VERSIONING.md).
 
 name: build
 on: [pull_request, push]
@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ['1.21.1', '1.21.4', '1.21.8']
+        version: ['1.21.1', '1.21.2', '1.21.3', '1.21.4', '1.21.8']
     # Only the not-yet-ported version may fail; the ported ones must stay green.
     continue-on-error: ${{ matrix.version == '1.21.8' }}
     steps:

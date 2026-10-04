@@ -129,7 +129,7 @@ public final class SunRenderer {
 			addCorner(builder, m, center, right, up, half, 1.0F, 0.0F);
 			addCorner(builder, m, center, right, up, half, 1.0F, 1.0F);
 			addCorner(builder, m, center, right, up, half, 0.0F, 1.0F);
-			//? if >=1.21.4 {
+			//? if >=1.21.2 {
 			/*RenderSystem.setShader(CoreShaderKeys.SUN);
 			*///?} else {
 			RenderSystem.setShader(() -> program);

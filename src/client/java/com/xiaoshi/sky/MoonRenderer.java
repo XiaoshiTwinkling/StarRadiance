@@ -246,7 +246,7 @@ public final class MoonRenderer {
 		}
 		vertexCount = verts;
 		buffer = new VertexBuffer(
-			//? if >=1.21.4 {
+			//? if >=1.21.2 {
 			/*net.minecraft.client.gl.GlUsage.STATIC_WRITE
 			*///?} else {
 			VertexBuffer.Usage.STATIC

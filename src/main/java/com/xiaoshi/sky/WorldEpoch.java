@@ -7,7 +7,9 @@ import com.xiaoshi.astro.SkyContext;
 import com.xiaoshi.config.StarRadianceConfig;
 import java.time.Instant;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+//? if attachment_sync {
 import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
+//?}
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.util.Identifier;
@@ -20,11 +22,20 @@ import net.minecraft.world.World;
  * own calendar and the client can compute the sky without talking to the server every frame.
  */
 public final class WorldEpoch {
+	// 1.21.2 ships Fabric API 0.106.1, whose attachment API predates both create(Identifier,
+	// Consumer) and syncWith: the epoch is still saved with the world there, but the client derives
+	// it locally instead of receiving it. Every other version syncs it as before.
+	//? if attachment_sync {
 	public static final AttachmentType<Long> EPOCH_UTC_MILLIS = AttachmentRegistry.<Long>create(
 		Identifier.of("starradiance", "epoch_utc"),
 		builder -> builder
 			.persistent(Codec.LONG)
 			.syncWith(PacketCodecs.VAR_LONG, AttachmentSyncPredicate.all()));
+	//?} else {
+	/*public static final AttachmentType<Long> EPOCH_UTC_MILLIS = AttachmentRegistry.<Long>builder()
+		.persistent(Codec.LONG)
+		.buildAndRegister(Identifier.of("starradiance", "epoch_utc"));
+	*///?}
 
 	/** Milliseconds of one game tick in the real-time mapping (24000 ticks = 86400 s). */
 	public static final long MILLIS_PER_TICK = 3600L;
@@ -37,7 +48,12 @@ public final class WorldEpoch {
 	}
 
 	public static Long get(World world) {
+		//? if attachment_sync {
 		return world.getAttached(EPOCH_UTC_MILLIS);
+		//?} else {
+		/*return ((net.fabricmc.fabric.api.attachment.v1.AttachmentTarget) world)
+			.getAttached(EPOCH_UTC_MILLIS);
+		*///?}
 	}
 
 	/** Returns the world epoch, creating it from the current clock on first load. */
@@ -47,7 +63,12 @@ public final class WorldEpoch {
 			return existing;
 		}
 		long epoch = System.currentTimeMillis() - world.getTimeOfDay() * MILLIS_PER_TICK;
+		//? if !attachment_sync {
+		/*((net.fabricmc.fabric.api.attachment.v1.AttachmentTarget) world)
+			.setAttached(EPOCH_UTC_MILLIS, epoch);
+		*///?} else {
 		world.setAttached(EPOCH_UTC_MILLIS, epoch);
+		//?}
 		StarRadiance.LOGGER.info("StarRadiance: world calendar starts at real UTC {}",
 			Instant.ofEpochMilli(epoch));
 		return epoch;

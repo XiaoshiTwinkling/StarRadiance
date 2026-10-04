@@ -72,10 +72,19 @@ processResources {
 }
 
 // The core shader *definitions* (JSON) cannot carry comments, so they are kept per shader-format
-// era and only the matching tree is copied into the jar; the GLSL itself is shared. 1.21.4
-// namespaced the program ids ("starradiance:core/sky" instead of "starradiance:sky"), and 1.21.5
-// rewrote the pipeline format entirely. Add shader_variants/1.21.5 when porting that version.
-def shaderEra = stonecutter.eval(minecraftVersion, '>=1.21.4') ? '1.21.4' : '1.21.1'
+// era and only the matching tree is copied into the jar; the GLSL itself is shared. 1.21.2
+// already namespaced the program ids ("starradiance:core/sky" instead of "starradiance:sky"), and
+// 1.21.5 rewrote the pipeline format entirely: add shader_variants/1.21.5 when porting that one.
+// The 1.21.4 folder is the name of that second era; it applies to 1.21.2 through 1.21.4.
+def shaderEra = stonecutter.eval(minecraftVersion, '>=1.21.2') ? '1.21.4' : '1.21.1'
+
+// 1.21.2 is the odd one out on attachments: its Fabric API build (0.106.1) predates syncWith, while
+// both 1.21.1 (0.116.17) and 1.21.3 (0.114.1) have it. A constant keeps that out of the Java source
+// as a version range that would be wrong in one direction or the other.
+stonecutter {
+	constants['attachment_sync'] = minecraftVersion != '1.21.2'
+}
+
 processClientResources {
 	inputs.property "shaderEra", shaderEra
 	// The variant trees are sources for the step below, not resources of their own.

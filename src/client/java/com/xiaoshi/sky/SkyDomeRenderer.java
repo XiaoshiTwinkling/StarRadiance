@@ -79,7 +79,7 @@ public final class SkyDomeRenderer {
 
 	/** Binds and returns the dome program; 1.21.4 resolves it from the shared sky key. */
 	private static ShaderProgram currentShader() {
-		//? if >=1.21.4 {
+		//? if >=1.21.2 {
 		/*return RenderSystem.setShader(StarFieldRenderer.SKY_KEY);
 		*///?} else {
 		ShaderProgram shader = program != null ? program : GameRenderer.getPositionColorProgram();
