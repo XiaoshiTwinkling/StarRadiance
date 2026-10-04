@@ -42,3 +42,7 @@ replay_*.log
 # offline moon-texture pipeline: downloaded NASA sources and 8k overrides are not shipped
 tools/downloads/
 tools/out_8k/
+
+# stonecutter: generated per-version projects (the shared sources stay in the root src/)
+versions/*/build/
+versions/*/.gradle/

@@ -3,7 +3,17 @@ plugins {
 	id 'maven-publish'
 }
 
-version = project.mod_version
+// This build script is shared by every registered Minecraft version (see settings.gradle):
+// Stonecutter runs it once per node, and `sc.current.version` tells which one is being built.
+// Sources always live in the root src/ tree; version specific values come from
+// versions/<version>/gradle.properties.
+def minecraftVersion = property('deps.minecraft') as String
+def yarnMappings = property('deps.yarn') as String
+def loaderVersion = property('deps.loader') as String
+def fabricApiVersion = property('deps.fabric_api') as String
+def minecraftDependency = property('dep.minecraft') as String
+
+version = "${project.mod_version}+${minecraftVersion}"
 group = project.maven_group
 
 base {
@@ -38,20 +48,40 @@ fabricApi {
 
 dependencies {
 	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	minecraft "com.mojang:minecraft:${minecraftVersion}"
+	mappings "net.fabricmc:yarn:${yarnMappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${loaderVersion}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
 	
 }
 
 processResources {
 	inputs.property "version", project.version
+	inputs.property "minecraft", minecraftDependency
+	inputs.property "loader", loaderVersion
 
 	filesMatching("fabric.mod.json") {
-		expand "version": inputs.properties.version
+		expand(
+			"version": inputs.properties.version,
+			"minecraft": inputs.properties.minecraft,
+			"loader": inputs.properties.loader
+		)
+	}
+}
+
+// Core shaders are whole files Stonecutter's comment syntax cannot adapt, so they are kept per
+// shader-format era and only the matching tree is copied into the jar. 1.21.5 rewrote the
+// rendering pipeline (and with it the core shader format); 1.21.1 through 1.21.4 share the
+// original one. Add src/client/resources/shader_variants/1.21.5 when porting that version.
+def shaderEra = stonecutter.eval(minecraftVersion, '>=1.21.5') ? '1.21.5' : '1.21.1'
+processClientResources {
+	inputs.property "shaderEra", shaderEra
+	// The variant trees are sources for the step below, not resources of their own.
+	exclude 'shader_variants/**'
+	from(rootProject.file("src/client/resources/shader_variants/${shaderEra}")) {
+		into ''
 	}
 }
 
@@ -72,7 +102,7 @@ java {
 jar {
 	inputs.property "archivesName", project.base.archivesName
 
-	from("LICENSE") {
+	from(rootProject.file("LICENSE")) {
 		rename { "${it}_${inputs.properties.archivesName}"}
 	}
 }
@@ -97,9 +127,9 @@ publishing {
 
 // Headless ephemeris verification (no Minecraft or Fabric on the classpath).
 def ephemerisVerificationSources = files(
-	fileTree('src/main/java/com/xiaoshi/astro'),
-	'src/main/java/com/xiaoshi/sky/Celestial.java',
-	fileTree('tools/verify')
+	rootProject.fileTree('src/main/java/com/xiaoshi/astro'),
+	rootProject.file('src/main/java/com/xiaoshi/sky/Celestial.java'),
+	rootProject.fileTree('tools/verify')
 )
 
 tasks.register('compileEphemerisVerification', JavaCompile) {
@@ -126,5 +156,6 @@ tasks.register('checkLangKeys', Exec) {
 			new File(dir, name).exists() || new File(dir, name + '.exe').exists()
 		}
 	}
+	workingDir rootProject.projectDir
 	commandLine(findExecutable('python3') ? 'python3' : 'python', 'tools/check_lang_keys.py')
 }

@@ -3,13 +3,13 @@
 	"id": "starradiance",
 	"version": "${version}",
 	"name": "StarRadiance",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "A real-astronomy night sky: the HYG star catalogue with precession and nutation, real solar and lunar ephemerides with eclipses, the eight planets plus the dwarf planets and Halley's comet, a draggable star chart and a star map with procedural globes.",
 	"authors": [
-		"Me!"
+		"XiaoshiTwinkling"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/XiaoshiTwinkling/StarRadiance",
+		"sources": "https://github.com/XiaoshiTwinkling/StarRadiance"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/starradiance/icon.png",
@@ -33,12 +33,12 @@
 		}
 	],
 	"depends": {
-		"fabricloader": ">=0.19.5",
-		"minecraft": "~1.21.1",
+		"fabricloader": ">=${loader}",
+		"minecraft": "${minecraft}",
 		"java": ">=21",
 		"fabric-api": "*"
 	},
 	"suggests": {
-		"another-mod": "*"
+		"iris": "*"
 	}
 }

@@ -1,7 +1,8 @@
-# Automatically build the project and run any configured tests for every push
-# and submitted pull request. This can help catch issues that only occur on
-# certain platforms or Java versions, and provides a first line of defence
-# against bad commits.
+# Automatically build the project and run the configured checks for every push and pull request.
+#
+# The job runs once per registered Minecraft version (see settings.gradle). 1.21.4 and 1.21.8 are
+# wired up but not ported yet, so their jobs are allowed to fail: remove the `continue-on-error`
+# expression once porting is done (see docs/VERSIONING.md).
 
 name: build
 on: [pull_request, push]
@@ -9,6 +10,12 @@ on: [pull_request, push]
 jobs:
   build:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['1.21.1', '1.21.4', '1.21.8']
+    # Only the ported baseline has to pass; the other entries are scaffolding for now.
+    continue-on-error: ${{ matrix.version != '1.21.1' }}
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
@@ -21,10 +28,12 @@ jobs:
           distribution: 'microsoft'
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
-      - name: build
-        run: ./gradlew build
+      - name: set active version
+        run: ./gradlew "Set active project to ${{ matrix.version }}"
+      - name: build and verify
+        run: ./gradlew :${{ matrix.version }}:build :${{ matrix.version }}:verifyEphemeris :${{ matrix.version }}:checkLangKeys
       - name: capture build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Artifacts
-          path: build/libs/
+          name: Artifacts-${{ matrix.version }}
+          path: versions/${{ matrix.version }}/build/libs/
